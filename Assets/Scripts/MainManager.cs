@@ -11,21 +11,38 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+
+    [SerializeField] Text HighscoreText;
+
     public GameObject GameOverText;
-    
+
     private bool m_Started = false;
     private int m_Points;
-    
+
     private bool m_GameOver = false;
 
-    
+
     // Start is called before the first frame update
     void Start()
     {
+
+        ScoreManager.Instance.LoadHighscore();
+        Debug.Log($"Playername: {ScoreManager.Instance.PlayerName} PlayerScore: {ScoreManager.Instance.PlayerScore}");
+        // Get highscore
+        if (ScoreManager.Instance.CurrentHighscore.PlayerScore != 0)
+        {
+            HighscoreText.text = $"Best Score: {ScoreManager.Instance.CurrentHighscore.PlayerName}: {ScoreManager.Instance.CurrentHighscore.PlayerScore}";
+        }
+        else
+        {
+            HighscoreText.text = "Waiting for new high score";
+        }
+
+        // Make the bricks
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
-        
-        int[] pointCountArray = new [] {1,1,2,2,5,5};
+
+        int[] pointCountArray = new[] { 1, 1, 2, 2, 5, 5 };
         for (int i = 0; i < LineCount; ++i)
         {
             for (int x = 0; x < perLine; ++x)
@@ -65,6 +82,7 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
+        ScoreManager.Instance.PlayerScore = m_Points;
         ScoreText.text = $"Score : {m_Points}";
     }
 
@@ -72,5 +90,12 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+
+        if(ScoreManager.Instance.CurrentHighscore.PlayerScore < m_Points)
+        {
+            Debug.Log("New high score detected, saving...");
+            HighscoreText.text = $"Best Score: {ScoreManager.Instance.PlayerName}: {ScoreManager.Instance.PlayerScore}";
+            ScoreManager.Instance.SaveHighscore();
+        }
     }
 }
